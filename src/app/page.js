@@ -23,8 +23,8 @@ function getExcerpt(html) {
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const posts = listPosts();
+export default async function HomePage() {
+  const posts = await listPosts();
 
   return (
     <div className="relative flex min-h-screen flex-col pb-20">

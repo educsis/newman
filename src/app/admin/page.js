@@ -40,7 +40,7 @@ async function persistImage(file) {
 
 async function createPostAction(prevState, formData) {
   "use server";
-  requireAdmin();
+  await requireAdmin();
   const title = formData.get("title")?.toString().trim() ?? "";
   const content = formData.get("content")?.toString().trim() ?? "";
   const imageFile = formData.get("image");
@@ -53,8 +53,8 @@ async function createPostAction(prevState, formData) {
   }
 
   const imagePath = await persistImage(imageFile);
-  const slug = generateSlug(title);
-  savePost({ title, slug, imagePath, content });
+  const slug = await generateSlug(title);
+  await savePost({ title, slug, imagePath, content });
   revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin");
@@ -62,12 +62,12 @@ async function createPostAction(prevState, formData) {
 
 async function deletePostAction(formData) {
   "use server";
-  requireAdmin();
+  await requireAdmin();
   const id = Number(formData.get("postId"));
   if (!id) {
     redirect("/admin");
   }
-  const post = getPostById(id);
+  const post = await getPostById(id);
   if (post?.imagePath) {
     const imageFsPath = path.join(process.cwd(), "public", post.imagePath);
     try {
@@ -76,7 +76,7 @@ async function deletePostAction(formData) {
       // Ignore errors; file may not exist.
     }
   }
-  deletePost(id);
+  await deletePost(id);
   revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin");
@@ -84,14 +84,14 @@ async function deletePostAction(formData) {
 
 async function logoutAction() {
   "use server";
-  signOut();
+  await signOut();
   redirect("/admin/login");
 }
 
 export default async function AdminDashboard() {
   // Ensure this page is not statically generated
-  const user = requireAdmin();
-  const posts = listPosts();
+  const user = await requireAdmin();
+  const posts = await listPosts();
 
   return (
     <div className="relative flex min-h-screen flex-col pb-20">

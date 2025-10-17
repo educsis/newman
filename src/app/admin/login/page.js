@@ -16,7 +16,7 @@ async function authenticate(prevState, formData) {
     return { error: "Ingresa usuario y contraseña." };
   }
 
-  const user = signIn(username, password);
+  const user = await signIn(username, password);
   if (!user) {
     return { error: "Credenciales inválidas. Prueba de nuevo." };
   }
@@ -24,8 +24,8 @@ async function authenticate(prevState, formData) {
   redirect("/admin");
 }
 
-export default function AdminLoginPage() {
-  const user = getCurrentUser();
+export default async function AdminLoginPage() {
+  const user = await getCurrentUser();
   if (user) {
     redirect("/admin");
   }

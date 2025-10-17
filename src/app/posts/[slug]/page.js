@@ -6,8 +6,8 @@ import { Sparkles, ArrowLeft, Calendar } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }) {
-  const post = getPostBySlug(params.slug);
+export async function generateMetadata({ params }) {
+  const post = await getPostBySlug(params.slug);
   if (!post) {
     return { title: "Artículo no encontrado | NEWMAN" };
   }
@@ -17,8 +17,8 @@ export function generateMetadata({ params }) {
   };
 }
 
-export default function PostPage({ params }) {
-  const post = getPostBySlug(params.slug);
+export default async function PostPage({ params }) {
+  const post = await getPostBySlug(params.slug);
   if (!post) {
     notFound();
   }
