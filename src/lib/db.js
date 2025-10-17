@@ -10,42 +10,49 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
+function initializeDatabase() {
+  const instance = new Database(dbPath, { timeout: 5000 });
+  instance.pragma("journal_mode = WAL");
+  instance.pragma("foreign_keys = ON");
+  instance.pragma("synchronous = NORMAL");
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL
-  );
+  instance.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL
+    );
 
-  CREATE TABLE IF NOT EXISTS sessions (
-    token TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires_at INTEGER NOT NULL
-  );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at INTEGER NOT NULL
+    );
 
-  CREATE TABLE IF NOT EXISTS posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    image_path TEXT,
-    content TEXT NOT NULL,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
-  );
-`);
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      image_path TEXT,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
 
-const ensureAdmin = db.prepare("SELECT id FROM users WHERE username = ?");
-const adminRow = ensureAdmin.get("admin");
-
-if (!adminRow) {
   const passwordHash = createHash("sha256").update("admin").digest("hex");
-  db.prepare(
-    "INSERT INTO users (username, password_hash) VALUES (@username, @password_hash)"
-  ).run({ username: "admin", password_hash: passwordHash });
+  instance
+    .prepare(
+      "INSERT OR IGNORE INTO users (username, password_hash) VALUES (?, ?)"
+    )
+    .run("admin", passwordHash);
+
+  return instance;
 }
+
+const globalForDb = globalThis;
+const db =
+  globalForDb.__newmanDbInstance ?? (globalForDb.__newmanDbInstance = initializeDatabase());
 
 export function hashPassword(rawPassword) {
   return createHash("sha256").update(rawPassword).digest("hex");
