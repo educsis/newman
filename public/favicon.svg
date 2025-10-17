@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bibleCover" x1="12" x2="52" y1="8" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0.1" stop-color="#38BDF8" />
+      <stop offset="0.55" stop-color="#818CF8" />
+      <stop offset="1" stop-color="#FDE68A" />
+    </linearGradient>
+    <linearGradient id="biblePages" x1="20" x2="44" y1="14" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95" />
+      <stop offset="1" stop-color="#E2E8F0" />
+    </linearGradient>
+  </defs>
+  <rect x="12" y="8" width="40" height="48" rx="6" fill="url(#bibleCover)" />
+  <rect x="18" y="14" width="28" height="36" rx="4" fill="url(#biblePages)" />
+  <path d="M26 20h12v4H26z" fill="#0F172A" />
+  <path d="M32 24v16" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+  <path d="M24 32h6" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+  <path d="M34 32h6" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+</svg>
