@@ -14,6 +14,10 @@ import {
 } from "@/lib/db";
 import { requireAdmin, signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import {
   Card,
   CardDescription,
@@ -84,8 +88,9 @@ async function logoutAction() {
   redirect("/admin/login");
 }
 
-export default function AdminDashboard() {
-  requireAdmin();
+export default async function AdminDashboard() {
+  // Ensure this page is not statically generated
+  const user = requireAdmin();
   const posts = listPosts();
 
   return (

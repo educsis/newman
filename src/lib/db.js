@@ -33,11 +33,17 @@ function obtainInitLock() {
 }
 
 function initializeDatabase() {
-  const instance = new Database(dbPath, { timeout: 5000 });
+  const instance = new Database(dbPath, { 
+    timeout: 10000,
+    verbose: process.env.NODE_ENV === 'development' ? console.log : null
+  });
+  
+  // Configure SQLite for better concurrency
   instance.pragma("journal_mode = WAL");
   instance.pragma("foreign_keys = ON");
   instance.pragma("synchronous = NORMAL");
-  instance.pragma("busy_timeout = 10000");
+  instance.pragma("busy_timeout = 30000");
+  instance.pragma("wal_autocheckpoint = 1000");
 
   if (!fs.existsSync(initMarkerPath)) {
     const lockFd = obtainInitLock();
@@ -93,15 +99,16 @@ function initializeDatabase() {
   return instance;
 }
 
-function withRetry(fn, attempts = 6, baseDelay = 40) {
+function withRetry(fn, attempts = 10, baseDelay = 50) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       return fn();
     } catch (error) {
-      if (error && error.code === "SQLITE_BUSY" && attempt < attempts) {
+      if (error && (error.code === "SQLITE_BUSY" || error.code === "SQLITE_LOCKED") && attempt < attempts) {
         lastError = error;
-        sleep(baseDelay * attempt);
+        const jitteredDelay = baseDelay * attempt + Math.random() * baseDelay;
+        sleep(Math.min(jitteredDelay, 2000)); // Cap at 2 seconds
         continue;
       }
       throw error;

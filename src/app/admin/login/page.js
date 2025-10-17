@@ -3,6 +3,10 @@ import { Sunrise, Sparkles } from "lucide-react";
 import LoginForm from "./LoginForm";
 import { getCurrentUser, signIn } from "@/lib/auth";
 
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function authenticate(prevState, formData) {
   "use server";
   const username = formData.get("username")?.toString().trim() ?? "";
